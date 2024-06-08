@@ -53,8 +53,10 @@
     "@pureadmin/utils": "^2.4.7",
     "@vueuse/core": "^10.10.0",
     "@vueuse/motion": "^2.2.3",
+    "@zxcvbn-ts/core": "^3.0.4",
     "animate.css": "^4.1.1",
     "axios": "^1.7.2",
+    "cropperjs": "^1.6.2",
     "dayjs": "^1.11.11",
     "echarts": "^5.5.0",
     "element-plus": "^2.7.4",
@@ -72,6 +74,7 @@
     "vue-i18n": "^9.13.1",
     "vue-router": "^4.3.2",
     "vue-tippy": "^6.4.1",
+    "vue-turnstile": "^1.0.8",
     "vue-types": "^5.1.2"
   },
   "devDependencies": {

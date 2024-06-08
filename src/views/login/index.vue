@@ -22,7 +22,8 @@ import globalization from "@/assets/svg/globalization.svg?component";
 import Lock from "@iconify-icons/ri/lock-fill";
 import Check from "@iconify-icons/ep/check";
 import User from "@iconify-icons/ri/user-3-fill";
-
+import VueTurnstile from "vue-turnstile";
+const { VITE_TURNSTILE_SITE_KEY } = import.meta.env;
 defineOptions({
   name: "Login"
 });
@@ -40,8 +41,9 @@ const { title, getDropdownItemStyle, getDropdownItemClass } = useNav();
 const { locale, translationCh, translationEn } = useTranslationLang();
 
 const ruleForm = reactive({
-  username: "admin",
-  password: "admin123"
+  username: "",
+  password: "",
+  captcha_token: ""
 });
 
 const onLogin = async (formEl: FormInstance | undefined) => {
@@ -50,7 +52,11 @@ const onLogin = async (formEl: FormInstance | undefined) => {
     if (valid) {
       loading.value = true;
       useUserStoreHook()
-        .loginByUsername({ username: ruleForm.username, password: "admin123" })
+        .loginByUsername({
+          username: ruleForm.username,
+          password: ruleForm.password,
+          captcha_token: ruleForm.captcha_token
+        })
         .then(res => {
           if (res.success) {
             // 获取后端路由
@@ -60,7 +66,9 @@ const onLogin = async (formEl: FormInstance | undefined) => {
               });
             });
           } else {
-            message(t("login.pureLoginFail"), { type: "error" });
+            message(t("login.pureLoginFail") + " Error: " + res?.message, {
+              type: "error"
+            });
           }
         })
         .finally(() => (loading.value = false));
@@ -177,6 +185,11 @@ onBeforeUnmount(() => {
                 />
               </el-form-item>
             </Motion>
+
+            <vue-turnstile
+              v-model="ruleForm.captcha_token"
+              :site-key="VITE_TURNSTILE_SITE_KEY"
+            />
 
             <Motion :delay="250">
               <el-button

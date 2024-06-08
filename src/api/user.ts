@@ -1,4 +1,4 @@
-import { http } from "@/utils/http";
+import { Login, RefreshToken } from "@/api/dev-admin";
 
 export type UserResult = {
   success: boolean;
@@ -34,10 +34,10 @@ export type RefreshTokenResult = {
 
 /** 登录 */
 export const getLogin = (data?: object) => {
-  return http.request<UserResult>("post", "/login", { data });
+  return Login(data);
 };
 
 /** 刷新`token` */
 export const refreshTokenApi = (data?: object) => {
-  return http.request<RefreshTokenResult>("post", "/refresh-token", { data });
+  return RefreshToken(data);
 };

@@ -1,10 +1,5 @@
-import { http } from "@/utils/http";
-
-type Result = {
-  success: boolean;
-  data: Array<any>;
-};
+import { MenuGetTree } from "@/api/dev-admin";
 
 export const getAsyncRoutes = () => {
-  return http.request<Result>("get", "/get-async-routes");
+  return MenuGetTree();
 };
