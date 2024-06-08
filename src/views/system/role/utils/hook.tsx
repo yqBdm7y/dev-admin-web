@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
-import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import { usePublicHooks } from "../../hooks";
 import { transformI18n } from "@/plugins/i18n";
@@ -11,6 +10,14 @@ import type { PaginationProps } from "@pureadmin/table";
 import { getKeyList, deviceDetection } from "@pureadmin/utils";
 import { getRoleList, getRoleMenu, getRoleMenuIds } from "@/api/system";
 import { type Ref, reactive, ref, onMounted, h, toRaw, watch } from "vue";
+import { showMessage } from "@/views/function";
+import {
+  RoleCreate,
+  RoleEdit,
+  RoleEditStatus,
+  RoleAssociateMenu,
+  RoleDelete
+} from "@/api/dev-admin";
 
 export function useRole(treeRef: Ref) {
   const form = reactive({
@@ -80,10 +87,10 @@ export function useRole(treeRef: Ref) {
     },
     {
       label: "创建时间",
-      prop: "createTime",
+      prop: "created_at",
       minWidth: 160,
-      formatter: ({ createTime }) =>
-        dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
+      formatter: ({ created_at }) =>
+        dayjs(created_at).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "操作",
@@ -118,7 +125,7 @@ export function useRole(treeRef: Ref) {
         draggable: true
       }
     )
-      .then(() => {
+      .then(async () => {
         switchLoadMap.value[index] = Object.assign(
           {},
           switchLoadMap.value[index],
@@ -126,27 +133,31 @@ export function useRole(treeRef: Ref) {
             loading: true
           }
         );
-        setTimeout(() => {
-          switchLoadMap.value[index] = Object.assign(
-            {},
-            switchLoadMap.value[index],
-            {
-              loading: false
-            }
-          );
-          message(`已${row.status === 0 ? "停用" : "启用"}${row.name}`, {
-            type: "success"
-          });
-        }, 300);
+        const res = await RoleEditStatus({ id: row.id, status: row.status });
+        const b = showMessage(res);
+        if (b) {
+          setTimeout(() => {
+            switchLoadMap.value[index] = Object.assign(
+              {},
+              switchLoadMap.value[index],
+              {
+                loading: false
+              }
+            );
+          }, 300);
+        }
       })
       .catch(() => {
         row.status === 0 ? (row.status = 1) : (row.status = 0);
       });
   }
 
-  function handleDelete(row) {
-    message(`您删除了角色名称为${row.name}的这条数据`, { type: "success" });
-    onSearch();
+  async function handleDelete(row) {
+    const res = await RoleDelete({ id: row.id });
+    const b = showMessage(res);
+    if (b) {
+      onSearch();
+    }
   }
 
   function handleSizeChange(val: number) {
@@ -185,6 +196,7 @@ export function useRole(treeRef: Ref) {
       title: `${title}角色`,
       props: {
         formInline: {
+          id: row?.id ?? 0,
           name: row?.name ?? "",
           code: row?.code ?? "",
           remark: row?.remark ?? ""
@@ -200,22 +212,27 @@ export function useRole(treeRef: Ref) {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`您${title}了角色名称为${curData.name}的这条数据`, {
-            type: "success"
-          });
           done(); // 关闭弹框
           onSearch(); // 刷新表格数据
         }
-        FormRef.validate(valid => {
+        FormRef.validate(async valid => {
           if (valid) {
             console.log("curData", curData);
             // 表单规则校验通过
             if (title === "新增") {
               // 实际开发先调用新增接口，再进行下面操作
-              chores();
+              const res = await RoleCreate(curData);
+              const b = showMessage(res);
+              if (b) {
+                chores();
+              }
             } else {
               // 实际开发先调用修改接口，再进行下面操作
-              chores();
+              const res = await RoleEdit(curData);
+              const b = showMessage(res);
+              if (b) {
+                chores();
+              }
             }
           }
         });
@@ -229,7 +246,7 @@ export function useRole(treeRef: Ref) {
     if (id) {
       curRow.value = row;
       isShow.value = true;
-      const { data } = await getRoleMenuIds({ id });
+      const { data } = await getRoleMenuIds({ role_id: id });
       treeRef.value.setCheckedKeys(data);
     } else {
       curRow.value = null;
@@ -246,13 +263,15 @@ export function useRole(treeRef: Ref) {
   }
 
   /** 菜单权限-保存 */
-  function handleSave() {
-    const { id, name } = curRow.value;
+  async function handleSave() {
+    const { id } = curRow.value;
     // 根据用户 id 调用实际项目中菜单权限修改接口
-    console.log(id, treeRef.value.getCheckedKeys());
-    message(`角色名称为${name}的菜单权限修改成功`, {
-      type: "success"
+    const idList = treeRef.value.getCheckedKeys();
+    const res = await RoleAssociateMenu({
+      id: id,
+      menus: idList.map(id => ({ id: id }))
     });
+    showMessage(res);
   }
 
   /** 数据权限 可自行开发 */

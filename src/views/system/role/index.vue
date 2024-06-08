@@ -57,7 +57,6 @@ const {
   dataList,
   treeData,
   treeProps,
-  isLinkage,
   pagination,
   isExpandAll,
   isSelectAll,
@@ -147,7 +146,7 @@ onMounted(() => {
       <PureTableBar
         :class="[isShow && !deviceDetection() ? '!w-[60vw]' : 'w-full']"
         style="transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1)"
-        title="角色管理（仅演示，操作后不生效）"
+        title="角色管理"
         :columns="columns"
         @refresh="onSearch"
       >
@@ -308,7 +307,6 @@ onMounted(() => {
         <div class="flex flex-wrap">
           <el-checkbox v-model="isExpandAll" label="展开/折叠" />
           <el-checkbox v-model="isSelectAll" label="全选/全不选" />
-          <el-checkbox v-model="isLinkage" label="父子联动" />
         </div>
         <el-tree-v2
           ref="treeRef"
@@ -316,7 +314,7 @@ onMounted(() => {
           :data="treeData"
           :props="treeProps"
           :height="treeHeight"
-          :check-strictly="!isLinkage"
+          :check-strictly="true"
           :filter-method="filterMethod"
         >
           <template #default="{ node }">

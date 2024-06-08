@@ -1,6 +1,5 @@
 import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
-import { message } from "@/utils/message";
 import { getMenuList } from "@/api/system";
 import { transformI18n } from "@/plugins/i18n";
 import { addDialog } from "@/components/ReDialog";
@@ -8,6 +7,8 @@ import { reactive, ref, onMounted, h } from "vue";
 import type { FormItemProps } from "../utils/types";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { cloneDeep, isAllEmpty, deviceDetection } from "@pureadmin/utils";
+import { showMessage } from "@/views/function";
+import { MenuCreate, MenuEdit, MenuDelete } from "@/api/dev-admin";
 
 export function useMenu() {
   const form = reactive({
@@ -28,6 +29,8 @@ export function useMenu() {
         return text ? "外链" : "danger";
       case 3:
         return text ? "按钮" : "info";
+      case 4:
+        return text ? "API" : "success";
     }
   };
 
@@ -77,7 +80,7 @@ export function useMenu() {
     },
     {
       label: "排序",
-      prop: "rank",
+      prop: "sort",
       width: 100
     },
     {
@@ -143,7 +146,7 @@ export function useMenu() {
           name: row?.name ?? "",
           path: row?.path ?? "",
           component: row?.component ?? "",
-          rank: row?.rank ?? 99,
+          rank: row?.rank ?? 0,
           redirect: row?.redirect ?? "",
           icon: row?.icon ?? "",
           extraIcon: row?.extraIcon ?? "",
@@ -157,7 +160,9 @@ export function useMenu() {
           hiddenTag: row?.hiddenTag ?? false,
           fixedTag: row?.fixedTag ?? false,
           showLink: row?.showLink ?? true,
-          showParent: row?.showParent ?? false
+          showParent: row?.showParent ?? false,
+          id: row?.id ?? 0,
+          sort: row?.sort ?? 0
         }
       },
       width: "45%",
@@ -170,25 +175,26 @@ export function useMenu() {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(
-            `您${title}了菜单名称为${transformI18n(curData.title)}的这条数据`,
-            {
-              type: "success"
-            }
-          );
           done(); // 关闭弹框
           onSearch(); // 刷新表格数据
         }
-        FormRef.validate(valid => {
+        FormRef.validate(async valid => {
           if (valid) {
-            console.log("curData", curData);
             // 表单规则校验通过
             if (title === "新增") {
               // 实际开发先调用新增接口，再进行下面操作
-              chores();
+              const res = await MenuCreate(curData);
+              const b = showMessage(res);
+              if (b) {
+                chores();
+              }
             } else {
               // 实际开发先调用修改接口，再进行下面操作
-              chores();
+              const res = await MenuEdit(curData);
+              const b = showMessage(res);
+              if (b) {
+                chores();
+              }
             }
           }
         });
@@ -196,11 +202,12 @@ export function useMenu() {
     });
   }
 
-  function handleDelete(row) {
-    message(`您删除了菜单名称为${transformI18n(row.title)}的这条数据`, {
-      type: "success"
-    });
-    onSearch();
+  async function handleDelete(row) {
+    const res = await MenuDelete({ id: row.id });
+    const b = showMessage(res);
+    if (b) {
+      onSearch();
+    }
   }
 
   onMounted(() => {

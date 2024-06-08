@@ -22,6 +22,8 @@ interface FormItemProps {
   fixedTag: boolean;
   showLink: boolean;
   showParent: boolean;
+  id: number;
+  sort: number;
 }
 interface FormProps {
   formInline: FormItemProps;

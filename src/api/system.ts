@@ -6,7 +6,7 @@ import {
   RoleGetList,
   MenuGetAll,
   DepartmentGetAll,
-  MenuGetLeafIdsByRoleId
+  MenuGetIdsByRoleId
 } from "@/api/dev-admin";
 
 type Result = {
@@ -90,5 +90,5 @@ export const getRoleMenu = (data?: object) => {
 
 /** 获取角色管理-权限-菜单权限-根据角色 id 查对应菜单 */
 export const getRoleMenuIds = (data?: object) => {
-  return MenuGetLeafIdsByRoleId(data);
+  return MenuGetIdsByRoleId(data);
 };

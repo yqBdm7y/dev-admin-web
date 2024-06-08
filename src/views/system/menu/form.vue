@@ -26,7 +26,7 @@ const props = withDefaults(defineProps<FormProps>(), {
     name: "",
     path: "",
     component: "",
-    rank: 99,
+    rank: 0,
     redirect: "",
     icon: "",
     extraIcon: "",
@@ -40,7 +40,9 @@ const props = withDefaults(defineProps<FormProps>(), {
     hiddenTag: false,
     fixedTag: false,
     showLink: true,
-    showParent: false
+    showParent: false,
+    id: 0,
+    sort: 0
   })
 });
 
@@ -141,9 +143,9 @@ defineExpose({ getRef });
       <re-col :value="12" :xs="24" :sm="24">
         <el-form-item label="菜单排序">
           <el-input-number
-            v-model="newFormInline.rank"
+            v-model="newFormInline.sort"
             class="!w-full"
-            :min="1"
+            :min="0"
             :max="9999"
             controls-position="right"
           />
@@ -165,7 +167,7 @@ defineExpose({ getRef });
       </re-col>
 
       <re-col
-        v-show="newFormInline.menuType !== 3"
+        v-show="newFormInline.menuType !== 3 && newFormInline.menuType !== 4"
         :value="12"
         :xs="24"
         :sm="24"
@@ -175,7 +177,7 @@ defineExpose({ getRef });
         </el-form-item>
       </re-col>
       <re-col
-        v-show="newFormInline.menuType !== 3"
+        v-show="newFormInline.menuType !== 3 && newFormInline.menuType !== 4"
         :value="12"
         :xs="24"
         :sm="24"
@@ -261,7 +263,7 @@ defineExpose({ getRef });
       </re-col>
 
       <re-col
-        v-show="newFormInline.menuType !== 3"
+        v-show="newFormInline.menuType !== 3 && newFormInline.menuType !== 4"
         :value="12"
         :xs="24"
         :sm="24"
@@ -279,7 +281,7 @@ defineExpose({ getRef });
         </el-form-item>
       </re-col>
       <re-col
-        v-show="newFormInline.menuType !== 3"
+        v-show="newFormInline.menuType !== 3 && newFormInline.menuType !== 4"
         :value="12"
         :xs="24"
         :sm="24"

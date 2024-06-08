@@ -1,13 +1,18 @@
 import dayjs from "dayjs";
 import editForm from "../form.vue";
 import { handleTree } from "@/utils/tree";
-import { message } from "@/utils/message";
 import { getDeptList } from "@/api/system";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
 import { reactive, ref, onMounted, h } from "vue";
 import type { FormItemProps } from "../utils/types";
 import { cloneDeep, isAllEmpty, deviceDetection } from "@pureadmin/utils";
+import { showMessage } from "@/views/function";
+import {
+  DepartmentCreate,
+  DepartmentEdit,
+  DepartmentDelete
+} from "@/api/dev-admin";
 
 export function useDept() {
   const form = reactive({
@@ -45,9 +50,9 @@ export function useDept() {
     {
       label: "创建时间",
       minWidth: 200,
-      prop: "createTime",
-      formatter: ({ createTime }) =>
-        dayjs(createTime).format("YYYY-MM-DD HH:mm:ss")
+      prop: "created_at",
+      formatter: ({ created_at }) =>
+        dayjs(created_at).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "备注",
@@ -107,6 +112,7 @@ export function useDept() {
       title: `${title}部门`,
       props: {
         formInline: {
+          id: row?.id ?? 0,
           higherDeptOptions: formatHigherDeptOptions(cloneDeep(dataList.value)),
           parentId: row?.parentId ?? 0,
           name: row?.name ?? "",
@@ -128,22 +134,26 @@ export function useDept() {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
         function chores() {
-          message(`您${title}了部门名称为${curData.name}的这条数据`, {
-            type: "success"
-          });
           done(); // 关闭弹框
           onSearch(); // 刷新表格数据
         }
-        FormRef.validate(valid => {
+        FormRef.validate(async valid => {
           if (valid) {
-            console.log("curData", curData);
             // 表单规则校验通过
             if (title === "新增") {
               // 实际开发先调用新增接口，再进行下面操作
-              chores();
+              const res = await DepartmentCreate(curData);
+              const b = showMessage(res);
+              if (b) {
+                chores();
+              }
             } else {
               // 实际开发先调用修改接口，再进行下面操作
-              chores();
+              const res = await DepartmentEdit(curData);
+              const b = showMessage(res);
+              if (b) {
+                chores();
+              }
             }
           }
         });
@@ -151,9 +161,12 @@ export function useDept() {
     });
   }
 
-  function handleDelete(row) {
-    message(`您删除了部门名称为${row.name}的这条数据`, { type: "success" });
-    onSearch();
+  async function handleDelete(row) {
+    const res = await DepartmentDelete({ id: row.id });
+    const b = showMessage(res);
+    if (b) {
+      onSearch();
+    }
   }
 
   onMounted(() => {

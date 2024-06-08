@@ -327,6 +327,7 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
       props: {
         formInline: {
           title,
+          id: row?.id ?? 0,
           higherDeptOptions: formatHigherDeptOptions(higherDeptOptions.value),
           department: row?.department ?? { id: 0 },
           nickname: row?.nickname ?? "",
