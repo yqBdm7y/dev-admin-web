@@ -15,7 +15,7 @@ import {
 } from "@/api/user";
 import { useMultiTagsStoreHook } from "./multiTags";
 import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
-
+import { message } from "@/utils/message";
 export const useUserStore = defineStore({
   id: "pure-user",
   state: (): userType => ({
@@ -84,9 +84,13 @@ export const useUserStore = defineStore({
       return new Promise<RefreshTokenResult>((resolve, reject) => {
         refreshTokenApi(data)
           .then(data => {
-            if (data) {
+            if (data?.success === true) {
               setToken(data.data);
               resolve(data);
+            } else {
+              message("令牌已经失效", { type: "error" });
+              removeToken();
+              router.push("/login");
             }
           })
           .catch(error => {
